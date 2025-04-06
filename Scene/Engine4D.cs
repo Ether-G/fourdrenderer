@@ -21,7 +21,7 @@ namespace FourDRenderer.Scene
         private DateTime _lastUpdateTime;
         
         // Added to fix acceleration issue
-        private bool _resetEachFrame = true;  // flag to reset objects each frame
+        private bool _resetEachFrame = true;  // Add this flag to reset objects each frame
 
         public Engine4D(int width, int height)
         {
@@ -46,6 +46,14 @@ namespace FourDRenderer.Scene
         {
             // Create a demo scene
             Scene = Scene4D.CreateDemoScene(Renderer.Camera);
+            
+            // List objects in the scene for debugging
+            Console.WriteLine("Initialized engine with objects:");
+            for (int i = 0; i < Scene.Objects.Count; i++)
+            {
+                Object4D obj = Scene.Objects[i];
+                Console.WriteLine($"{i}: {obj.Name} with {obj.Vertices.Count} vertices");
+            }
         }
 
         // Main update loop
@@ -109,19 +117,14 @@ namespace FourDRenderer.Scene
                 rotation = rotation * Matrix4D.CreateRotationZW(RotationAngles[5]);
             }
             
-            // Apply rotation to selected object or all objects
-            if (Scene.SelectedObject != null)
+            // Reset the current object if needed
+            if (_resetEachFrame && Scene.SelectedObject != null)
             {
-                foreach (Object4D obj in Scene.Objects)
-                {
-                    // Reset to original position before applying new rotation
-                    if (_resetEachFrame)
-                    {
-                        obj.ResetTransformation();
-                    }
-                    obj.ApplyTransformation(rotation);
-                }
+                Scene.SelectedObject.ResetTransformation();
             }
+            
+            // Apply the rotation to the selected object only
+            Scene.ApplyRotation(rotation);
         }
 
         // Toggle animation on/off
@@ -145,12 +148,9 @@ namespace FourDRenderer.Scene
             _resetEachFrame = !_resetEachFrame;
             
             // If turned on, reset all objects immediately
-            if (_resetEachFrame)
+            if (_resetEachFrame && Scene.SelectedObject != null)
             {
-                foreach (Object4D obj in Scene.Objects)
-                {
-                    obj.ResetTransformation();
-                }
+                Scene.SelectedObject.ResetTransformation();
             }
         }
 
@@ -170,8 +170,37 @@ namespace FourDRenderer.Scene
                 // Toggle animation
                 if (key == Keys.Space) ToggleAnimation();
                 
-                // Toggle reset each frame
+                // Toggle reset each frame (added to fix acceleration)
                 if (key == Keys.T) ToggleResetEachFrame();
+                
+                // Select next object (using Tab)
+                if (key == Keys.Tab)
+                {
+                    // Debug info
+                    Console.WriteLine($"Objects in scene: {Scene.Objects.Count}");
+                    for (int i = 0; i < Scene.Objects.Count; i++)
+                    {
+                        Console.WriteLine($"Object {i}: {Scene.Objects[i].Name}");
+                    }
+                    
+                    // Find the index of the currently selected object
+                    int currentIndex = Scene.SelectedObject != null 
+                        ? Scene.Objects.IndexOf(Scene.SelectedObject) 
+                        : -1;
+                    Console.WriteLine($"Current selected index: {currentIndex}");
+                        
+                    // Select the next object
+                    int nextIndex = (currentIndex + 1) % Scene.Objects.Count;
+                    Scene.SelectObject(nextIndex);
+                    
+                    // Reset the rotation on object switch
+                    if (Scene.SelectedObject != null)
+                    {
+                        Scene.SelectedObject.ResetTransformation();
+                    }
+                    
+                    Console.WriteLine($"New selected index: {nextIndex}");
+                }
                 
                 // Adjust speed
                 if (key == Keys.Up) RotationSpeed += 0.005f;
@@ -237,10 +266,16 @@ namespace FourDRenderer.Scene
             string resetMode = _resetEachFrame ? "Reset Each Frame" : "Cumulative Rotations";
             Renderer.DrawText("Mode: " + resetMode, new Vector2D(10, 70), Color.Yellow);
             
-            Renderer.DrawDebugInfo(new Point(10, 90), Scene.SelectedObject);
+            // Add selected object info
+            string selectedObjectInfo = Scene.SelectedObject != null 
+                ? $"Selected: {Scene.SelectedObject.Name}" 
+                : "No object selected";
+            Renderer.DrawText(selectedObjectInfo, new Vector2D(10, 90), Color.Cyan);
+            
+            Renderer.DrawDebugInfo(new Point(10, 110), Scene.SelectedObject);
             
             // Control information
-            Renderer.DrawText("Controls: 1-6=Toggle Rotations, Space=Pause, T=Toggle Reset Mode", 
+            Renderer.DrawText("Controls: 1-6=Toggle Rotations, Space=Pause, T=Toggle Reset, Tab=Switch Object", 
                 new Vector2D(10, Renderer.Height - 40), Color.LightGray);
             Renderer.DrawText("W/S/A/D/Q/E/R/F=Move Camera, +/-=Viewer Distance, Up/Down=Speed", 
                 new Vector2D(10, Renderer.Height - 20), Color.LightGray);
@@ -279,7 +314,7 @@ namespace FourDRenderer.Scene
     {
         Space, 
         D1, D2, D3, D4, D5, D6,
-        W, A, S, D, Q, E, R, F, T, // Added T key
+        W, A, S, D, Q, E, R, F, T, Tab,
         Up, Down, Left, Right,
         Add, Subtract, OemPlus, OemMinus
     }

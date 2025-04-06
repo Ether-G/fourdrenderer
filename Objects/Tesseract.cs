@@ -38,7 +38,6 @@ namespace FourDRenderer.Objects
             }
 
             // Generate edges - each vertex connects to 4 others
-            // Create a helper function to determine if two vertices should be connected
             for (int i = 0; i < 16; i++)
             {
                 for (int j = i + 1; j < 16; j++)
@@ -53,7 +52,7 @@ namespace FourDRenderer.Objects
             }
         }
 
-        // helper method to determine if two vertices should be connected
+        // Helper method to determine if two vertices should be connected
         private bool ShouldConnect(int index1, int index2)
         {
             // Two vertices are connected if they differ in exactly one bit
@@ -64,7 +63,7 @@ namespace FourDRenderer.Objects
             return xor != 0 && (xor & (xor - 1)) == 0;
         }
 
-        // helper method to get color based on which dimension the edge represents
+        // Helper method to get color based on which dimension the edge represents
         private Color GetEdgeColor(int index1, int index2)
         {
             int xor = index1 ^ index2;
@@ -74,12 +73,18 @@ namespace FourDRenderer.Objects
             if (xor == 4) return Color.Blue;     // Z-axis edge
             if (xor == 8) return Color.Yellow;   // W-axis edge
             
-            return Color.White; // Shouldn't happen but just in case....
+            return Color.White; // Shouldnt happen but just in case
         }
 
         public override void Render(Renderer renderer)
         {
             base.Render(renderer);
+            
+            // Draw label near the center
+            Vector3D center3D = Center.ProjectTo3D(renderer.Camera.ViewerDistance);
+            Vector2D labelPos = renderer.Camera.ProjectTo2D(center3D);
+            labelPos.Y -= 30;
+            renderer.DrawText("Tesseract", labelPos, Color.Cyan);
         }
     }
 }

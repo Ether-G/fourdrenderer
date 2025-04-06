@@ -124,6 +124,7 @@ namespace FourDRenderer
                 case System.Windows.Forms.Keys.Subtract: return EngineKeys.Subtract;
                 case System.Windows.Forms.Keys.Oemplus: return EngineKeys.OemPlus;
                 case System.Windows.Forms.Keys.OemMinus: return EngineKeys.OemMinus;
+                case System.Windows.Forms.Keys.Tab: return EngineKeys.Tab;
                 default: return 0;
             }
         }

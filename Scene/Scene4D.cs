@@ -11,6 +11,7 @@ namespace FourDRenderer.Scene
         public List<Object4D> Objects { get; private set; }
         public Camera4D Camera { get; set; }
         public Object4D? SelectedObject { get; set; } // Made nullable
+        public int SelectedIndex { get; private set; } = 0;
 
         public Scene4D()
         {
@@ -33,18 +34,26 @@ namespace FourDRenderer.Scene
             if (SelectedObject == null)
             {
                 SelectedObject = obj;
+                SelectedIndex = 0;
             }
         }
 
         // Remove an object from the scene
         public void RemoveObject(Object4D obj)
         {
+            int index = Objects.IndexOf(obj);
             Objects.Remove(obj);
             
             // Update selected object if needed
             if (SelectedObject == obj)
             {
-                SelectedObject = Objects.Count > 0 ? Objects[0] : null;
+                SelectedIndex = Objects.Count > 0 ? 0 : -1;
+                SelectedObject = SelectedIndex >= 0 ? Objects[SelectedIndex] : null;
+            }
+            else if (index < SelectedIndex && SelectedIndex > 0)
+            {
+                // Adjust selected index if we removed an object before it
+                SelectedIndex--;
             }
         }
 
@@ -54,6 +63,8 @@ namespace FourDRenderer.Scene
             if (index >= 0 && index < Objects.Count)
             {
                 SelectedObject = Objects[index];
+                SelectedIndex = index;
+                Console.WriteLine($"Selected object: {SelectedObject.Name} (index {index})");
             }
         }
 
@@ -66,28 +77,22 @@ namespace FourDRenderer.Scene
             }
         }
 
-        // Apply a 4D rotation to the selected object or all objects
-        public void ApplyRotation(Matrix4D rotation, bool applyToAll = false)
+        // Apply a 4D rotation to the selected object
+        public void ApplyRotation(Matrix4D rotation)
         {
-            if (applyToAll)
-            {
-                foreach (Object4D obj in Objects)
-                {
-                    obj.ApplyTransformation(rotation);
-                }
-            }
-            else if (SelectedObject != null)
+            if (SelectedObject != null)
             {
                 SelectedObject.ApplyTransformation(rotation);
             }
         }
 
-        // Render all objects in the scene
+        // Render only the selected object in the scene
         public void Render(Renderer renderer)
         {
-            foreach (Object4D obj in Objects)
+            // Only render the selected object
+            if (SelectedObject != null)
             {
-                renderer.RenderObject(obj);
+                SelectedObject.Render(renderer);
             }
         }
 
@@ -100,14 +105,19 @@ namespace FourDRenderer.Scene
             Tesseract tesseract = new Tesseract(1.0f);
             scene.AddObject(tesseract);
             
-            // Add a hypersphere
-            Hypersphere hypersphere = new Hypersphere(0.7f, 8);
-            // Position it off to the side
-            foreach (Vector4D vertex in hypersphere.Vertices)
-            {
-                vertex.X += 2.0f;
-            }
+            // Add a hypersphere with a different size
+            Hypersphere hypersphere = new Hypersphere(1.2f, 12);
             scene.AddObject(hypersphere);
+            
+            // Initially select the tesseract
+            scene.SelectedObject = tesseract;
+            scene.SelectedIndex = 0;
+            
+            Console.WriteLine($"Created scene with {scene.Objects.Count} objects:");
+            foreach (Object4D obj in scene.Objects)
+            {
+                Console.WriteLine($"- {obj.Name} with {obj.Vertices.Count} vertices and {obj.Edges.Count} edges");
+            }
             
             return scene;
         }

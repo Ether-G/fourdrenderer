@@ -9,29 +9,61 @@ namespace FourDRenderer.Objects
     {
         public Vector4D Position { get; set; }
         public List<Vector4D> Vertices { get; protected set; }
-        public List<Vector4D> OriginalVertices { get; protected set; } // Store original vertices
+        public List<Vector4D> OriginalVertices { get; protected set; }
         public List<Edge4D> Edges { get; protected set; }
         public Matrix4D Transformation { get; protected set; }
         public string Name { get; set; }
+        
+        public Vector4D Center { get; protected set; }
 
         protected Object4D()
         {
             Position = new Vector4D(0, 0, 0, 0);
-            OriginalVertices = new List<Vector4D>(); // Initialize original vertices list
+            OriginalVertices = new List<Vector4D>();
             Vertices = new List<Vector4D>();
             Edges = new List<Edge4D>();
             Transformation = Matrix4D.CreateIdentity();
+            Center = new Vector4D(0, 0, 0, 0);
             Name = GetType().Name;
         }
 
+        // center of the object from its vertices
+        protected void CalculateCenter()
+        {
+            // Reset center
+            Center = new Vector4D(0, 0, 0, 0);
+            
+            // Early exit if no vertices
+            if (Vertices.Count == 0) return;
+            
+            // Sum all vertex positions
+            foreach (Vector4D v in Vertices)
+            {
+                Center.X += v.X;
+                Center.Y += v.Y;
+                Center.Z += v.Z;
+                Center.W += v.W;
+            }
+            
+            // Divide by count to get avg
+            float count = Vertices.Count;
+            Center.X /= count;
+            Center.Y /= count;
+            Center.Z /= count;
+            Center.W /= count;
+        }
+
         // Store a copy of current vertices as original vertices
-        protected void StoreOriginalVertices()
+        public void StoreOriginalVertices()
         {
             OriginalVertices.Clear();
             foreach (Vector4D vertex in Vertices)
             {
                 OriginalVertices.Add(new Vector4D(vertex.X, vertex.Y, vertex.Z, vertex.W));
             }
+            
+            // Calculate center when storing original vertices
+            CalculateCenter();
         }
         
         // Reset vertices to original positions
@@ -39,7 +71,7 @@ namespace FourDRenderer.Objects
         {
             Transformation = Matrix4D.CreateIdentity();
             
-            // reset vertices to original positions
+            // Reset vertices to original positions
             Vertices.Clear();
             foreach (Vector4D originalVertex in OriginalVertices)
             {
@@ -51,13 +83,24 @@ namespace FourDRenderer.Objects
         {
             Transformation = transform;
             
-            // apply transformation to vertices based on original positions
+            // Apply transformation to vertices around the object's center:
+            // 1. Translate to origin
+            // 2. Apply rotation
+            // 3. Translate back to original position
             Vertices.Clear();
             
             foreach (Vector4D originalVertex in OriginalVertices)
             {
-                Vector4D transformedVertex = transform.Transform(originalVertex);
-                Vertices.Add(transformedVertex);
+                // Translate to origin by subtracting center
+                Vector4D centered = originalVertex.Subtract(Center);
+                
+                // Apply rotation transformation
+                Vector4D rotated = transform.Transform(centered);
+                
+                // Translate back to original position by adding center
+                Vector4D transformed = rotated.Add(Center);
+                
+                Vertices.Add(transformed);
             }
         }
 
@@ -81,8 +124,11 @@ namespace FourDRenderer.Objects
         // Update object state (for animations or movements)
         public virtual void Update(float deltaTime)
         {
+            // Default implementation does nothing
+            // Override in derived classes for custom behavior
         }
 
+        // Render the object using the provided renderer
         public virtual void Render(Renderer renderer)
         {
             // Project vertices to 3D space
@@ -101,6 +147,11 @@ namespace FourDRenderer.Objects
             {
                 edge.Render(renderer, projected2D);
             }
+            
+            // render the object's center point
+            Vector3D center3D = Center.ProjectTo3D(renderer.Camera.ViewerDistance);
+            Vector2D center2D = renderer.Camera.ProjectTo2D(center3D);
+            renderer.DrawPoint(center2D, Color.Magenta, 5);
         }
     }
 }
