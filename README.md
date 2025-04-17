@@ -1,197 +1,61 @@
-﻿# 4D Object Renderer
+# 4D Object Renderer
 
-A C# application that visualizes four-dimensional objects by projecting them into three-dimensional space and then onto a two-dimensional display. This project demonstrates all four principles of object-oriented programming (abstraction, encapsulation, inheritance, and polymorphism) through a well-structured class hierarchy.
+A C# Windows Forms application for visualizing four-dimensional (4D) geometric objects by projecting them into 3D space and then onto a 2D screen.
+
+## How it Works
+
+The application renders 4D objects using a projection pipeline:
+
+1.  **4D Coordinates:** Objects are defined by vertices in 4D space (X, Y, Z, W).
+2.  **4D to 3D Projection:** A perspective projection is used to transform the 4D coordinates into 3D space. This is analogous to how a 3D scene is projected onto a 2D camera sensor, but with an extra dimension. The distance of the viewpoint along the W-axis affects the perspective.
+3.  **3D to 2D Projection:** The resulting 3D coordinates are then projected onto a 2D plane using standard perspective projection, similar to typical 3D graphics rendering.
+4.  **Rendering:** The final 2D points are used to draw the wireframe edges of the object on the screen.
 
 ## Features
 
-- Visualize 4D objects (tesseract, hypersphere) through wireframe rendering
-- Rotate objects in any of the 6 possible 4D rotation planes (XY, XZ, XW, YZ, YW, ZW)
-- Navigate the camera in 4D space
-- Color-coded edges to help visualize the different dimensions
-- Interactive controls for exploring 4D geometry
+* Visualize various 4D objects (Tesseract, Hypersphere, Pentachoron, Toratope).
+* Wireframe rendering with color-coded edges often indicating axes or structure.
+* Interactive rotation of objects across the 6 distinct planes in 4D (XY, XZ, XW, YZ, YW, ZW).
+* Camera controls to move the viewpoint in 4D space.
+* Ability to switch between different objects in the scene.
 
 ## Architecture
 
-The project is structured around the following components:
+## Object Previews
 
-```mermaid
-classDiagram
-    %% Mathematics Framework
-    class Vector2D {
-        +float X
-        +float Y
-        +Vector2D Add(Vector2D)
-        +Vector2D Subtract(Vector2D)
-        +float DotProduct(Vector2D)
-        +Point ToPoint()
-    }
-    
-    class Vector3D {
-        +float X
-        +float Y
-        +float Z
-        +Vector3D Add(Vector3D)
-        +Vector3D Subtract(Vector3D)
-        +Vector3D CrossProduct(Vector3D)
-        +Vector2D ProjectTo2D(float)
-    }
-    
-    class Vector4D {
-        +float X
-        +float Y
-        +float Z
-        +float W
-        +Vector4D Add(Vector4D)
-        +Vector4D Subtract(Vector4D)
-        +Vector3D ProjectTo3D(float)
-    }
-    
-    class Matrix4D {
-        +float[,] Matrix
-        +Matrix4D Multiply(Matrix4D)
-        +Vector4D Transform(Vector4D)
-        +static Matrix4D CreateRotationXY(float)
-        +static Matrix4D CreateRotationXZ(float)
-        +static Matrix4D CreateRotationXW(float)
-        +static Matrix4D CreateRotationYZ(float)
-        +static Matrix4D CreateRotationYW(float)
-        +static Matrix4D CreateRotationZW(float)
-    }
-    
-    %% 4D Objects
-    class Object4D {
-        <<abstract>>
-        +Vector4D Position
-        +Vector4D Center
-        +List~Vector4D~ Vertices
-        +List~Vector4D~ OriginalVertices
-        +List~Edge4D~ Edges
-        +Matrix4D Transformation
-        +void ApplyTransformation(Matrix4D)
-        +List~Vector3D~ ProjectTo3D(float)
-        +abstract void GenerateGeometry()
-        +void Render(Renderer)
-    }
-    
-    class Tesseract {
-        +float Size
-        +override void GenerateGeometry()
-    }
-    
-    class Hypersphere {
-        +float Radius
-        +int Resolution
-        +override void GenerateGeometry()
-    }
-    
-    class Edge4D {
-        +int StartVertexIndex
-        +int EndVertexIndex
-        +Color Color
-        +void Render(Renderer, List~Vector2D~)
-    }
-    
-    %% Rendering System
-    class Camera4D {
-        +Vector4D Position
-        +float ViewerDistance
-        +float Screen3DDistance
-        +Vector3D ProjectTo3D(Vector4D)
-        +Vector2D ProjectTo2D(Vector3D)
-    }
-    
-    class Renderer {
-        +Bitmap Canvas
-        +Camera4D Camera
-        +void DrawLine(Vector2D, Vector2D, Color)
-        +void DrawPoint(Vector2D, Color, int)
-        +void RenderObject(Object4D)
-    }
-    
-    %% Scene Management
-    class Scene4D {
-        +List~Object4D~ Objects
-        +Object4D SelectedObject
-        +Camera4D Camera
-        +void AddObject(Object4D)
-        +void SelectObject(int)
-        +void ApplyRotation(Matrix4D)
-        +void Render(Renderer)
-    }
-    
-    class Engine4D {
-        +Scene4D Scene
-        +Renderer Renderer
-        +float[] RotationAngles
-        +boolean[] ActiveRotations
-        +void Update(float)
-        +void RotateObjects(float)
-        +void ProcessInput(Keys, boolean)
-        +void Render()
-    }
-    
-    %% Relationships
-    Vector4D --> Vector3D : projects to
-    Vector3D --> Vector2D : projects to
-    
-    Object4D <|-- Tesseract
-    Object4D <|-- Hypersphere
-    
-    Object4D *-- "many" Vector4D
-    Object4D *-- "many" Edge4D
-    Object4D o-- Matrix4D
-    
-    Edge4D ..> Renderer : uses
-    
-    Renderer o-- Camera4D
-    Renderer ..> Object4D : renders
-    
-    Scene4D *-- "many" Object4D
-    Scene4D *-- "1" Camera4D
-    
-    Engine4D *-- "1" Scene4D
-    Engine4D *-- "1" Renderer
-```
+**Tesseract (Hypercube)**
+![4d](https://github.com/user-attachments/assets/5399b242-8abf-42e3-bee0-4a28707fcc0c)
 
-## Mathematical Framework
+**Hypersphere (3-Sphere)**
+![hypersphere2](https://github.com/user-attachments/assets/adb60369-38c5-41ab-8b70-6a2bc44b08e2)
 
-The project is built on a foundation of four-dimensional mathematics (THIS WAS FUN!!!!):
+**Pentachoron (5-Cell)**
+![5cellvertrack4](https://github.com/user-attachments/assets/e81f7c91-1518-41e8-8333-681b1f5ce6ad)
 
-- **Vector Classes**: Support operations in 2D, 3D, and 4D space with projection capabilities
-- **Matrix4D**: Handles 4D transformations including rotations in all six 4D planes
-- **Projection Pipeline**: 4D to 3D to 2D projection with perspective effects
-
-## Object Hierarchy
-
-- **Object4D**: Abstract base class for all 4D objects
-  - **Tesseract**: 4D hypercube with 16 vertices and 32 edges
-  - **Hypersphere**: 4D sphere with mathematically correct spherical coordinates
-
-## Rendering System
-
-- **Camera4D**: Defines the viewpoint in 4D space
-- **Renderer**: Handles the projection pipeline and drawing operations
-- **Edge4D**: Connects vertices with color-coding to visualize dimensions
+**Toratope (4D Torus)**
+![Toratope](https://github.com/user-attachments/assets/ab5ccbe3-5a39-4bb2-85f3-a175d8952f90)
 
 ## Controls
 
-- **1-6 Keys**: Toggle rotation in different 4D planes (XY, XZ, XW, YZ, YW, ZW)
-- **Space**: Pause/resume animation
-- **Tab**: Switch between objects (tesseract, hypersphere)
-- **W/S/A/D**: Move camera along X/Y axes
-- **Q/E**: Move camera along Z axis
-- **R/F**: Move camera along W axis (4th dimension)
-- **+/-**: Adjust viewer distance
-- **T**: Toggle between reset each frame and cumulative rotations
-- **Up/Down**: Adjust rotation speed
+* **1-6 Keys**: Toggle rotation in specific 4D planes (1:XY, 2:XZ, 3:XW, 4:YZ, 5:YW, 6:ZW).
+* **Space**: Pause/resume animation.
+* **Tab**: Switch selected object.
+* **W/S**: Move camera along Y-axis.
+* **A/D**: Move camera along X-axis.
+* **Q/E**: Move camera along Z-axis.
+* **R/F**: Move camera along W-axis.
+* **+/- (or OemPlus/OemMinus)**: Adjust 4D->3D viewer distance.
+* **Up/Down Arrows**: Increase/decrease rotation speed.
+* **T**: Toggle rotation mode (Reset Each Frame / Cumulative).
 
 ## Requirements
 
-- .NET 6.0 or later
-- Windows Forms for the UI
+* .NET 8.0 (or compatible).
+* Windows Operating System (uses Windows Forms).
 
-## Installation
+## How to Run
 
-1. Clone the repository
-2. Open the solution in Visual Studio
-3. Build and run the application (dotnet build, dotnet run)
+1.  Clone the repository.
+2.  Open the solution file (`.sln`) in Visual Studio or use the .NET CLI.
+3.  Build the solution (`dotnet build`).
+4.  Run the application (`dotnet run --project FourDRenderer/FourDRenderer.csproj`).
