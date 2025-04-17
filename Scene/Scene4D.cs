@@ -109,6 +109,10 @@ namespace FourDRenderer.Scene
             Hypersphere hypersphere = new Hypersphere(1.2f, 12);
             scene.AddObject(hypersphere);
             
+            // Add a 4D torus (toratope)
+            Toratope toratope = new Toratope(1.5f, 0.5f, 12);
+            scene.AddObject(toratope);
+            
             // Initially select the tesseract
             scene.SelectedObject = tesseract;
             scene.SelectedIndex = 0;
