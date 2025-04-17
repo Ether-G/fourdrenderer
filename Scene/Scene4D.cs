@@ -113,6 +113,10 @@ namespace FourDRenderer.Scene
             Toratope toratope = new Toratope(1.5f, 0.5f, 12);
             scene.AddObject(toratope);
             
+            // Add a 5-cell (pentachoron)
+            Pentachoron pentachoron = new Pentachoron(2f);
+            scene.AddObject(pentachoron);
+            
             // Initially select the tesseract
             scene.SelectedObject = tesseract;
             scene.SelectedIndex = 0;
