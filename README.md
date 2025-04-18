@@ -21,6 +21,130 @@ The application renders 4D objects using a projection pipeline:
 
 ## Architecture
 
+```mermaid
+classDiagram
+    %% Mathematics Framework
+    class Vector2D {
+        +float X, Y
+        +Point ToPoint()
+        <<helper>>
+    }
+    class Vector3D {
+        +float X, Y, Z
+        +Vector2D ProjectTo2D(float viewerDistance)
+        <<helper>>
+    }
+    class Vector4D {
+        +float X, Y, Z, W
+        +Vector3D ProjectTo3D(float viewerDistance)
+        <<helper>>
+    }
+    class Matrix4D {
+        +float[,] Matrix
+        +Vector4D Transform(Vector4D)
+        +static Matrix4D CreateRotationXY(float)
+        +static Matrix4D CreateRotationXZ(float)
+        +static Matrix4D CreateRotationXW(float)
+        +static Matrix4D CreateRotationYZ(float)
+        +static Matrix4D CreateRotationYW(float)
+        +static Matrix4D CreateRotationZW(float)
+        <<helper>>
+    }
+
+    %% 4D Objects
+    class Object4D {
+        <<abstract>>
+        +List~Vector4D~ Vertices
+        +List~Edge4D~ Edges
+        +Matrix4D Transformation
+        +string Name
+        +Vector4D Center
+        +void ApplyTransformation(Matrix4D)
+        +abstract void GenerateGeometry()
+        +void Render(Renderer)
+        #virtual void RenderDetails(Renderer, List~Vector2D~, List~Vector3D~)
+    }
+    class Tesseract { +float Size }
+    class Hypersphere { +float Radius; +int Resolution }
+    class Pentachoron { +float Size }
+    class Toratope { +float MajorRadius; +float MinorRadius; +int Resolution }
+    class Edge4D { +int StartVertexIndex; +int EndVertexIndex; +Color Color }
+
+    %% Rendering System
+    class Camera4D {
+        +Vector4D Position
+        +float ViewerDistance
+        +float Screen3DDistance
+        +Vector3D ProjectTo3D(Vector4D)
+        +Vector2D ProjectTo2D(Vector3D)
+    }
+    class Renderer {
+        +Bitmap Canvas
+        +Camera4D Camera
+        +void DrawLine(Vector2D, Vector2D, Color)
+        +void DrawPoint(Vector2D, Color, int)
+        +void RenderObject(Object4D)
+    }
+
+    %% Scene Management
+    class Scene4D {
+        +List~Object4D~ Objects
+        +Object4D SelectedObject
+        +Camera4D Camera
+        +void AddObject(Object4D)
+        +void SelectObject(int)
+        +void ApplyRotation(Matrix4D)
+        +void Render(Renderer)
+    }
+    class Engine4D {
+        +Scene4D Scene
+        +Renderer Renderer
+        +float[] RotationAngles
+        +boolean[] ActiveRotations
+        +void Update(float)
+        +void RotateObjects(float)
+        +void ProcessInput(Keys, boolean)
+        +void Render()
+    }
+
+    %% UI
+    class Form1 {
+      -Engine4D _engine
+      -PictureBox _renderSurface
+      <<UI Form>>
+    }
+
+    %% Relationships
+    Vector4D --> Vector3D : projects to
+    Vector3D --> Vector2D : projects to
+
+    Object4D <|-- Tesseract
+    Object4D <|-- Hypersphere
+    Object4D <|-- Pentachoron
+    Object4D <|-- Toratope
+
+    Object4D *-- "many" Vector4D : vertices
+    Object4D *-- "many" Edge4D : edges
+    Object4D o-- Matrix4D : transformation
+
+    Edge4D ..> Renderer : uses
+    Edge4D ..> Vector2D : uses
+
+    Renderer o-- Camera4D
+    Renderer ..> Object4D : renders
+
+    Scene4D *-- "many" Object4D
+    Scene4D *-- "1" Camera4D
+
+    Engine4D *-- "1" Scene4D
+    Engine4D *-- "1" Renderer
+    Engine4D ..> Object4D : applies rotation to selected
+    Engine4D ..> Matrix4D : creates rotation
+
+    Form1 *-- "1" Engine4D
+    Form1 ..> Renderer : displays canvas from
+```
+
 ## Object Previews
 
 **Tesseract (Hypercube)**
