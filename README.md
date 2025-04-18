@@ -24,15 +24,19 @@ The application renders 4D objects using a projection pipeline:
 ## Object Previews
 
 **Tesseract (Hypercube)**
+
 ![4d](https://github.com/user-attachments/assets/5399b242-8abf-42e3-bee0-4a28707fcc0c)
 
 **Hypersphere (3-Sphere)**
+
 ![hypersphere2](https://github.com/user-attachments/assets/adb60369-38c5-41ab-8b70-6a2bc44b08e2)
 
 **Pentachoron (5-Cell)**
+
 ![5cellvertrack4](https://github.com/user-attachments/assets/e81f7c91-1518-41e8-8333-681b1f5ce6ad)
 
 **Toratope (4D Torus)**
+
 ![Toratope](https://github.com/user-attachments/assets/ab5ccbe3-5a39-4bb2-85f3-a175d8952f90)
 
 ## Controls
