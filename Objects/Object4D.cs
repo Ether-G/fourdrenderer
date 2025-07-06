@@ -131,14 +131,19 @@ namespace FourDRenderer.Objects
         // Render the object using the provided renderer
         public virtual void Render(Renderer renderer)
         {
-            // Project vertices to 3D space
-            List<Vector3D> projected3D = ProjectTo3D(renderer.Camera.ViewerDistance);
+            // Project vertices directly from 4D to 3D camera space using the new camera method
+            List<Vector3D> projected3D = new List<Vector3D>();
+            foreach (Vector4D vertex in Vertices)
+            {
+                Vector3D proj = renderer.Camera.Project4DToCamera3DSpace(vertex);
+                projected3D.Add(proj);
+            }
             
             // Project 3D vertices to 2D screen space
             List<Vector2D> projected2D = new List<Vector2D>();
             foreach (Vector3D vertex3D in projected3D)
             {
-                Vector2D proj = renderer.Camera.ProjectTo2D(vertex3D);
+                Vector2D proj = renderer.Camera.Project3DToScreen2D(vertex3D);
                 projected2D.Add(proj);
             }
             
@@ -149,8 +154,8 @@ namespace FourDRenderer.Objects
             }
             
             // render the object's center point
-            Vector3D center3D = Center.ProjectTo3D(renderer.Camera.ViewerDistance);
-            Vector2D center2D = renderer.Camera.ProjectTo2D(center3D);
+            Vector3D center3D = renderer.Camera.Project4DToCamera3DSpace(Center);
+            Vector2D center2D = renderer.Camera.Project3DToScreen2D(center3D);
             renderer.DrawPoint(center2D, Color.Magenta, 5);
         }
     }

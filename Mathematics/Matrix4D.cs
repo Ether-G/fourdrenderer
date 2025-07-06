@@ -198,5 +198,39 @@ namespace FourDRenderer.Mathematics
             
             return matrix;
         }
+
+        // Transpose the matrix (for pure rotation matrices, transpose = inverse)
+        public Matrix4D Transpose()
+        {
+            Matrix4D result = new Matrix4D();
+            
+            for (int i = 0; i < 5; i++)
+            {
+                for (int j = 0; j < 5; j++)
+                {
+                    result[i, j] = _matrix[j, i];
+                }
+            }
+            
+            return result;
+        }
+
+        // Invert the matrix (simplified for our use case)
+        public Matrix4D Invert()
+        {
+            // For pure rotation matrices, transpose = inverse
+            // For translation matrices, negate the translation components
+            // This is a simplified implementation... if I had more time I would use a gaussian elimination
+            
+            Matrix4D result = Transpose();
+            
+            // Negate the translation components (last column)
+            result[0, 4] = -_matrix[0, 4];
+            result[1, 4] = -_matrix[1, 4];
+            result[2, 4] = -_matrix[2, 4];
+            result[3, 4] = -_matrix[3, 4];
+            
+            return result;
+        }
     }
 }
