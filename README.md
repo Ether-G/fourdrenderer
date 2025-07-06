@@ -1,23 +1,28 @@
 # 4D Object Renderer
 
-A C# Windows Forms application for visualizing four-dimensional (4D) geometric objects by projecting them into 3D space and then onto a 2D screen.
+A C# Windows Forms application for visualizing four-dimensional (4D) geometric objects using a natively 4D engine space with advanced camera controls.
 
 ## How it Works
 
-The application renders 4D objects using a projection pipeline:
+The application renders 4D objects using a native 4D projection pipeline:
 
 1.  **4D Coordinates:** Objects are defined by vertices in 4D space (X, Y, Z, W).
-2.  **4D to 3D Projection:** A perspective projection is used to transform the 4D coordinates into 3D space. This is analogous to how a 3D scene is projected onto a 2D camera sensor, but with an extra dimension. The distance of the viewpoint along the W-axis affects the perspective.
-3.  **3D to 2D Projection:** The resulting 3D coordinates are then projected onto a 2D plane using standard perspective projection, similar to typical 3D graphics rendering.
-4.  **Rendering:** The final 2D points are used to draw the wireframe edges of the object on the screen.
+2.  **4D Camera Space:** The camera exists in 4D space with position and orientation, creating a 4D view matrix that transforms world coordinates to camera space.
+3.  **4D to 3D Projection:** The camera projects 4D coordinates to 3D space using perspective projection along the W-axis in camera space.
+4.  **3D to 2D Projection:** The resulting 3D coordinates are then projected onto a 2D plane using standard perspective projection.
+5.  **Rendering:** The final 2D points are used to draw the wireframe edges of the object on the screen.
 
 ## Features
 
 * Visualize various 4D objects (Tesseract, Hypersphere, Pentachoron, Toratope).
 * Wireframe rendering with color-coded edges often indicating axes or structure.
 * Interactive rotation of objects across the 6 distinct planes in 4D (XY, XZ, XW, YZ, YW, ZW).
-* Camera controls to move the viewpoint in 4D space.
+* **NEW:** 4D camera controls with position and orientation in 4D space.
+* **NEW:** Camera rotation controls across all 6 4D planes.
+* **NEW:** Multiple 4D projection methods (Perspective, Orthographic, Stereographic, Fisheye).
+* **NEW:** Comparison mode showing all 4 projection methods side by side.
 * Ability to switch between different objects in the scene.
+* **NEW:** Native 4D engine space with camera perceiving 4D objects directly.
 
 ## Architecture
 
@@ -165,13 +170,13 @@ classDiagram
 
 ## Controls
 
-* **1-6 Keys**: Toggle rotation in specific 4D planes (1:XY, 2:XZ, 3:XW, 4:YZ, 5:YW, 6:ZW).
-* **Space**: Pause/resume animation.
+* **1-6 Keys**: Toggle object rotation in specific 4D planes (1:XY, 2:XZ, 3:XW, 4:YZ, 5:YW, 6:ZW).
+* **I/J/K/L/U/O Keys**: Toggle camera rotation in specific 4D planes (I:XY, J:XZ, K:XW, L:YZ, U:YW, O:ZW).
+* **P Key**: Cycle through projection methods (Perspective → Orthographic → Stereographic → Fisheye).
+* **C Key**: Toggle comparison mode (shows all 4 projection methods side by side).
+* **Space**: Pause/resume object and camera animation.
 * **Tab**: Switch selected object.
-* **W/S**: Move camera along Y-axis.
-* **A/D**: Move camera along X-axis.
-* **Q/E**: Move camera along Z-axis.
-* **R/F**: Move camera along W-axis.
+* **Backspace**: Reset entire simulation (objects, camera, toggles, speeds).
 * **+/- (or OemPlus/OemMinus)**: Adjust 4D->3D viewer distance.
 * **Up/Down Arrows**: Increase/decrease rotation speed.
 * **T**: Toggle rotation mode (Reset Each Frame / Cumulative).

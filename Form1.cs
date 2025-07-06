@@ -116,6 +116,13 @@ namespace FourDRenderer
                 case System.Windows.Forms.Keys.E: return EngineKeys.E;
                 case System.Windows.Forms.Keys.R: return EngineKeys.R;
                 case System.Windows.Forms.Keys.F: return EngineKeys.F;
+                case System.Windows.Forms.Keys.T: return EngineKeys.T;
+                case System.Windows.Forms.Keys.I: return EngineKeys.I;
+                case System.Windows.Forms.Keys.J: return EngineKeys.J;
+                case System.Windows.Forms.Keys.K: return EngineKeys.K;
+                case System.Windows.Forms.Keys.L: return EngineKeys.L;
+                case System.Windows.Forms.Keys.U: return EngineKeys.U;
+                case System.Windows.Forms.Keys.O: return EngineKeys.O;
                 case System.Windows.Forms.Keys.Up: return EngineKeys.Up;
                 case System.Windows.Forms.Keys.Down: return EngineKeys.Down;
                 case System.Windows.Forms.Keys.Left: return EngineKeys.Left;
@@ -125,6 +132,9 @@ namespace FourDRenderer
                 case System.Windows.Forms.Keys.Oemplus: return EngineKeys.OemPlus;
                 case System.Windows.Forms.Keys.OemMinus: return EngineKeys.OemMinus;
                 case System.Windows.Forms.Keys.Tab: return EngineKeys.Tab;
+                case System.Windows.Forms.Keys.Back: return EngineKeys.Backspace;
+                case System.Windows.Forms.Keys.P: return EngineKeys.P;
+                case System.Windows.Forms.Keys.C: return EngineKeys.C;
                 default: return 0;
             }
         }
