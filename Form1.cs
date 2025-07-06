@@ -133,6 +133,8 @@ namespace FourDRenderer
                 case System.Windows.Forms.Keys.OemMinus: return EngineKeys.OemMinus;
                 case System.Windows.Forms.Keys.Tab: return EngineKeys.Tab;
                 case System.Windows.Forms.Keys.Back: return EngineKeys.Backspace;
+                case System.Windows.Forms.Keys.P: return EngineKeys.P;
+                case System.Windows.Forms.Keys.C: return EngineKeys.C;
                 default: return 0;
             }
         }

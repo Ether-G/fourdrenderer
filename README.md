@@ -19,6 +19,8 @@ The application renders 4D objects using a native 4D projection pipeline:
 * Interactive rotation of objects across the 6 distinct planes in 4D (XY, XZ, XW, YZ, YW, ZW).
 * **NEW:** 4D camera controls with position and orientation in 4D space.
 * **NEW:** Camera rotation controls across all 6 4D planes.
+* **NEW:** Multiple 4D projection methods (Perspective, Orthographic, Stereographic, Fisheye).
+* **NEW:** Comparison mode showing all 4 projection methods side by side.
 * Ability to switch between different objects in the scene.
 * **NEW:** Native 4D engine space with camera perceiving 4D objects directly.
 
@@ -170,12 +172,11 @@ classDiagram
 
 * **1-6 Keys**: Toggle object rotation in specific 4D planes (1:XY, 2:XZ, 3:XW, 4:YZ, 5:YW, 6:ZW).
 * **I/J/K/L/U/O Keys**: Toggle camera rotation in specific 4D planes (I:XY, J:XZ, K:XW, L:YZ, U:YW, O:ZW).
-* **Space**: Pause/resume object animation.
+* **P Key**: Cycle through projection methods (Perspective → Orthographic → Stereographic → Fisheye).
+* **C Key**: Toggle comparison mode (shows all 4 projection methods side by side).
+* **Space**: Pause/resume object and camera animation.
 * **Tab**: Switch selected object.
-* **W/S**: Move camera along Y-axis. (DEPRECATED)
-* **A/D**: Move camera along X-axis. (DEPRECATED)
-* **Q/E**: Move camera along Z-axis. (DEPRECATED)
-* **R/F**: Move camera along W-axis. (DEPRECATED)
+* **Backspace**: Reset entire simulation (objects, camera, toggles, speeds).
 * **+/- (or OemPlus/OemMinus)**: Adjust 4D->3D viewer distance.
 * **Up/Down Arrows**: Increase/decrease rotation speed.
 * **T**: Toggle rotation mode (Reset Each Frame / Cumulative).

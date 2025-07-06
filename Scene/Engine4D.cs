@@ -33,6 +33,9 @@ namespace FourDRenderer.Scene
 
         // Add a field to track camera animation state
         private bool _cameraAnimating = true;
+        
+        // Comparison mode - show multiple projections side by side
+        public bool ComparisonMode { get; set; } = false;
 
         public Engine4D(int width, int height)
         {
@@ -97,6 +100,7 @@ namespace FourDRenderer.Scene
             _isAnimating = true;
             _cameraAnimating = true;
             _resetEachFrame = true;
+            ComparisonMode = false;
         }
 
         // Update main update loop to use _cameraAnimating for camera rotation
@@ -306,6 +310,12 @@ namespace FourDRenderer.Scene
                 }
                 // Add Backspace to reset the simulation
                 if (key == Keys.Backspace) ResetSimulation();
+                
+                // Cycle through projection methods
+                if (key == Keys.P) Renderer.Camera.CycleProjectionMethod();
+                
+                // Toggle comparison mode
+                if (key == Keys.C) ComparisonMode = !ComparisonMode;
             }
         }
 
@@ -323,11 +333,87 @@ namespace FourDRenderer.Scene
             // Clear the screen
             Renderer.Clear();
             
-            // Render the scene
-            Scene.Render(Renderer);
+            if (ComparisonMode)
+            {
+                RenderComparisonMode();
+            }
+            else
+            {
+                // Render the scene normally
+                Scene.Render(Renderer);
+            }
             
             // Draw debug information
             DrawDebugInfo();
+        }
+
+        // Render comparison mode with multiple projections
+        private void RenderComparisonMode()
+        {
+            int width = Renderer.Width;
+            int height = Renderer.Height;
+            
+            // Reserve space for debug info on the right side
+            int debugWidth = 320; // Width reserved for debug info
+            int renderWidth = width - debugWidth; // Remaining width for projections
+            
+            int halfRenderWidth = renderWidth / 2;
+            int halfHeight = height / 2;
+            
+            // Store original camera settings
+            ProjectionMethod originalProjection = Renderer.Camera.ProjectionType;
+            int originalCenterX = Renderer.Camera.ScreenCenterX;
+            int originalCenterY = Renderer.Camera.ScreenCenterY;
+            float originalScaleX = Renderer.Camera.ScaleX;
+            float originalScaleY = Renderer.Camera.ScaleY;
+            
+            // Adjust scale for smaller viewports
+            float scaleFactor = 0.6f; // Reduce scale more to prevent overflow
+            
+            // Top-left: Perspective
+            Renderer.Camera.ProjectionType = ProjectionMethod.Perspective;
+            Renderer.Camera.ScreenCenterX = halfRenderWidth / 2;
+            Renderer.Camera.ScreenCenterY = halfHeight / 2;
+            Renderer.Camera.ScaleX = originalScaleX * scaleFactor;
+            Renderer.Camera.ScaleY = originalScaleY * scaleFactor;
+            Scene.Render(Renderer);
+            
+            // Top-right: Orthographic
+            Renderer.Camera.ProjectionType = ProjectionMethod.Orthographic;
+            Renderer.Camera.ScreenCenterX = halfRenderWidth + halfRenderWidth / 2;
+            Renderer.Camera.ScreenCenterY = halfHeight / 2;
+            Renderer.Camera.ScaleX = originalScaleX * scaleFactor;
+            Renderer.Camera.ScaleY = originalScaleY * scaleFactor;
+            Scene.Render(Renderer);
+            
+            // Bottom-left: Stereographic
+            Renderer.Camera.ProjectionType = ProjectionMethod.Stereographic;
+            Renderer.Camera.ScreenCenterX = halfRenderWidth / 2;
+            Renderer.Camera.ScreenCenterY = halfHeight + halfHeight / 2;
+            Renderer.Camera.ScaleX = originalScaleX * scaleFactor;
+            Renderer.Camera.ScaleY = originalScaleY * scaleFactor;
+            Scene.Render(Renderer);
+            
+            // Bottom-right: Fisheye
+            Renderer.Camera.ProjectionType = ProjectionMethod.Fisheye;
+            Renderer.Camera.ScreenCenterX = halfRenderWidth + halfRenderWidth / 2;
+            Renderer.Camera.ScreenCenterY = halfHeight + halfHeight / 2;
+            Renderer.Camera.ScaleX = originalScaleX * scaleFactor;
+            Renderer.Camera.ScaleY = originalScaleY * scaleFactor;
+            Scene.Render(Renderer);
+            
+            // Draw labels for each quadrant
+            Renderer.DrawText("Perspective", new Vector2D(10, 10), Color.White);
+            Renderer.DrawText("Orthographic", new Vector2D(halfRenderWidth + 10, 10), Color.White);
+            Renderer.DrawText("Stereographic", new Vector2D(10, halfHeight + 10), Color.White);
+            Renderer.DrawText("Fisheye", new Vector2D(halfRenderWidth + 10, halfHeight + 10), Color.White);
+            
+            // Restore original camera settings
+            Renderer.Camera.ProjectionType = originalProjection;
+            Renderer.Camera.ScreenCenterX = originalCenterX;
+            Renderer.Camera.ScreenCenterY = originalCenterY;
+            Renderer.Camera.ScaleX = originalScaleX;
+            Renderer.Camera.ScaleY = originalScaleY;
         }
 
         // Render debug information
@@ -355,28 +441,51 @@ namespace FourDRenderer.Scene
                 }
             }
             
-            Renderer.DrawText(rotationInfo, new Vector2D(10, 10), Color.Yellow);
-            Renderer.DrawText(cameraRotationInfo, new Vector2D(10, 30), Color.Orange);
-            Renderer.DrawText("Speed: " + RotationSpeed.ToString("F3"), new Vector2D(10, 50), Color.Yellow);
+            // Determine debug info position based on comparison mode
+            int debugX, debugY;
+            if (ComparisonMode)
+            {
+                // In comparison mode, use the dedicated right-side space
+                debugX = Renderer.Width - 320 + 10; // Start 10 pixels from the left edge of debug area
+                debugY = 10;
+            }
+            else
+            {
+                // Normal mode - use left side
+                debugX = 10;
+                debugY = 10;
+            }
+            
+            Renderer.DrawText(rotationInfo, new Vector2D(debugX, debugY), Color.Yellow);
+            Renderer.DrawText(cameraRotationInfo, new Vector2D(debugX, debugY + 20), Color.Orange);
+            Renderer.DrawText("Speed: " + RotationSpeed.ToString("F3"), new Vector2D(debugX, debugY + 40), Color.Yellow);
             
             string animationStatus = _isAnimating ? "Running" : "Paused";
-            Renderer.DrawText("Animation: " + animationStatus, new Vector2D(10, 70), Color.Yellow);
+            Renderer.DrawText("Animation: " + animationStatus, new Vector2D(debugX, debugY + 60), Color.Yellow);
             
             // Add reset mode status to debug info
             string resetMode = _resetEachFrame ? "Reset Each Frame" : "Cumulative Rotations";
-            Renderer.DrawText("Mode: " + resetMode, new Vector2D(10, 90), Color.Yellow);
+            Renderer.DrawText("Mode: " + resetMode, new Vector2D(debugX, debugY + 80), Color.Yellow);
             
             // Add selected object info
             string selectedObjectInfo = Scene.SelectedObject != null 
                 ? $"Selected: {Scene.SelectedObject.Name}" 
                 : "No object selected";
-            Renderer.DrawText(selectedObjectInfo, new Vector2D(10, 110), Color.Cyan);
+            Renderer.DrawText(selectedObjectInfo, new Vector2D(debugX, debugY + 100), Color.Cyan);
             
             // Add camera info
             float current4DDistance = Renderer.Camera.ViewerDistance4D;
             float current3DDistance = Renderer.Camera.ViewerDistance3D;
-            Renderer.DrawText($"Camera 4D Distance: {current4DDistance:F2}", new Vector2D(10, 130), Color.Green);
-            Renderer.DrawText($"Camera 3D Distance: {current3DDistance:F2}", new Vector2D(10, 150), Color.Green);
+            Renderer.DrawText($"Camera 4D Distance: {current4DDistance:F2}", new Vector2D(debugX, debugY + 120), Color.Green);
+            Renderer.DrawText($"Camera 3D Distance: {current3DDistance:F2}", new Vector2D(debugX, debugY + 140), Color.Green);
+            Renderer.DrawText($"Projection: {Renderer.Camera.ProjectionType}", new Vector2D(debugX, debugY + 160), Color.Magenta);
+            
+            // Show comparison mode status
+            if (ComparisonMode)
+            {
+                Renderer.DrawText("COMPARISON MODE", new Vector2D(debugX, debugY + 180), Color.Red);
+                Renderer.DrawText("4 Views Side-by-Side", new Vector2D(debugX, debugY + 200), Color.Red);
+            }
             
             // Debug output to console every 60 frames (about once per second)
             _debugFrameCount++;
@@ -385,14 +494,18 @@ namespace FourDRenderer.Scene
                 Console.WriteLine($"Debug - 4D Distance: {current4DDistance:F2}, 3D Distance: {current3DDistance:F2}");
             }
             
-            Renderer.DrawDebugInfo(new Point(10, 170), Scene.SelectedObject);
+            // Only show object debug info in normal mode (not comparison mode)
+            if (!ComparisonMode)
+            {
+                Renderer.DrawDebugInfo(new Point(debugX, debugY + 200), Scene.SelectedObject);
+            }
             
-            // Control information
+            // Control information (always at bottom)
             Renderer.DrawText("Controls: 1-6=Toggle Object Rotations, I/J/K/L/U/O=Toggle Camera Rotations", 
                 new Vector2D(10, Renderer.Height - 80), Color.LightGray);
             Renderer.DrawText("Space=Pause, T=Toggle Reset, Tab=Switch Object, Backspace=Full Reset", 
                 new Vector2D(10, Renderer.Height - 60), Color.LightGray);
-            Renderer.DrawText("+/-=4D Distance, Up/Down=Speed", 
+            Renderer.DrawText("P=Cycle Projection, C=Toggle Comparison, +/-=4D Distance, Up/Down=Speed", 
                 new Vector2D(10, Renderer.Height - 40), Color.LightGray);
         }
 
@@ -433,6 +546,8 @@ namespace FourDRenderer.Scene
         I, J, K, L, U, O, // Camera rotation keys
         Up, Down, Left, Right,
         Add, Subtract, OemPlus, OemMinus,
-        Backspace
+        Backspace,
+        P,
+        C
     }
 }
