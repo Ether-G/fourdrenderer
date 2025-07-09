@@ -1,6 +1,4 @@
 # 4D Object Renderer
-## Video
-https://youtu.be/mvJnPCmKaUM
 
 A C# Windows Forms application for visualizing four-dimensional (4D) geometric objects using a natively 4D engine space with advanced camera controls.
 
